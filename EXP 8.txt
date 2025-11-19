@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define N 5  // Number of philosophers
+
+pthread_mutex_t forks[N];  // One mutex for each fork
+
+void* philosopher(void* num)
+{
+    int id = *(int*)num;
+
+    while (1) {
+        printf("Philosopher %d is thinking 💭\n", id + 1);
+        sleep(1);
+
+        // Pick up left fork
+        pthread_mutex_lock(&forks[id]);
+        printf("Philosopher %d picked up left fork %d 🍴\n", id + 1, id + 1);
+
+        // Pick up right fork
+        pthread_mutex_lock(&forks[(id + 1) % N]);
+        printf("Philosopher %d picked up right fork %d 🍴\n", id + 1, (id + 1) % N + 1);
+
+        // Eat
+        printf("Philosopher %d is eating 🍝\n", id + 1);
+        sleep(2);
+
+        // Put down forks
+        pthread_mutex_unlock(&forks[id]);
+        pthread_mutex_unlock(&forks[(id + 1) % N]);
+        printf("Philosopher %d put down forks and is thinking again 💭\n", id + 1);
+
+        sleep(1);
+    }
+}
+
+int main()
+{
+    pthread_t thread_id[N];
+    int philosophers[N];
+    int i;
+
+    // Initialize mutexes (forks)
+    for (i = 0; i < N; i++)
+        pthread_mutex_init(&forks[i], NULL);
+
+    // Create philosopher threads
+    for (i = 0; i < N; i++) {
+        philosophers[i] = i;
+        pthread_create(&thread_id[i], NULL, philosopher, &philosophers[i]);
+    }
+
+    // Wait for all threads to complete (infinite loop here)
+    for (i = 0; i < N; i++)
+        pthread_join(thread_id[i], NULL);
+
+    // Destroy mutexes
+    for (i = 0; i < N; i++)
+        pthread_mutex_destroy(&forks[i]);
+
+    return 0;
+}
