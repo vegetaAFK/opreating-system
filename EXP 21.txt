@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
+int main() {
+    int fd;
+    char buffer[100];
+    ssize_t bytesRead;
+
+    // 1. Create/Open a file
+    fd = open("example.txt", O_CREAT | O_RDWR, 0644);
+    if (fd == -1) {
+        perror("open");
+        return 1;
+    }
+    printf("File created/opened successfully.\n");
+
+    // 2. Write data to file
+    char data[] = "Hello, UNIX system calls!";
+    if (write(fd, data, strlen(data)) == -1) {
+        perror("write");
+        close(fd);
+        return 1;
+    }
+    printf("Data written successfully.\n");
+
+    // 3. Move file pointer to beginning
+    lseek(fd, 0, SEEK_SET);
+
+    // 4. Read data from file
+    bytesRead = read(fd, buffer, sizeof(buffer)-1);
+    if (bytesRead == -1) {
+        perror("read");
+        close(fd);
+        return 1;
+    }
+    buffer[bytesRead] = '\0';
+    printf("Data read: %s\n", buffer);
+
+    // 5. Close file
+    close(fd);
+    printf("File closed successfully.\n");
+
+    // 6. Delete file
+    if (unlink("example.txt") == -1) {
+        perror("unlink");
+        return 1;
+    }
+    printf("File deleted successfully.\n");
+
+    return 0;
+}
+

@@ -1,0 +1,96 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n, head, i, j, direction;
+    int requests[50], size;
+
+    printf("Enter number of disk requests: ");
+    scanf("%d", &n);
+
+    printf("Enter disk requests:\n");
+    for (i = 0; i < n; i++)
+        scanf("%d", &requests[i]);
+
+    printf("Enter initial head position: ");
+    scanf("%d", &head);
+
+    printf("Enter total disk size (last cylinder number): ");
+    scanf("%d", &size);
+
+    printf("Enter head direction (0 = left, 1 = right): ");
+    scanf("%d", &direction);
+
+    // Sort requests
+    for (i = 0; i < n - 1; i++) {
+        for (j = 0; j < n - i - 1; j++) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+
+    int totalMovement = 0;
+    int index = 0;
+
+    // Find first request greater than head
+    for (i = 0; i < n; i++) {
+        if (requests[i] >= head) {
+            index = i;
+            break;
+        }
+    }
+
+    printf("\nSCAN Disk Scheduling Order:\n");
+    printf("%d", head);
+
+    // SCAN to the right
+    if (direction == 1) {
+        // Move right
+        for (i = index; i < n; i++) {
+            totalMovement += abs(head - requests[i]);
+            head = requests[i];
+            printf(" -> %d", head);
+        }
+
+        // Go to the end
+        totalMovement += abs(head - (size - 1));
+        head = size - 1;
+        printf(" -> %d", head);
+
+        // Move left
+        for (i = index - 1; i >= 0; i--) {
+            totalMovement += abs(head - requests[i]);
+            head = requests[i];
+            printf(" -> %d", head);
+        }
+    }
+
+    // SCAN to the left
+    else {
+        // Move left
+        for (i = index - 1; i >= 0; i--) {
+            totalMovement += abs(head - requests[i]);
+            head = requests[i];
+            printf(" -> %d", head);
+        }
+
+        // Go to cylinder 0
+        totalMovement += abs(head - 0);
+        head = 0;
+        printf(" -> %d", head);
+
+        // Move right
+        for (i = index; i < n; i++) {
+            totalMovement += abs(head - requests[i]);
+            head = requests[i];
+            printf(" -> %d", head);
+        }
+    }
+
+    printf("\n\nTotal Head Movement = %d cylinders\n", totalMovement);
+
+    return 0;
+}
